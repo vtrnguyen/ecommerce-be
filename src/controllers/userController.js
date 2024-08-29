@@ -1,8 +1,8 @@
-import testService from "../services/testService";
+import userService from "../services/userService";
 
 let handleGetAllUser = async (req, res) => {
     try {
-        let users = await testService.getAllUser();
+        let users = await userService.getAllUser();
 
         return res.status(200).json({
             users

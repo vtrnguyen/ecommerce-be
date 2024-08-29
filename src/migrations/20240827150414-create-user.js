@@ -10,11 +10,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       firstName: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       lastName: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       email: {
@@ -26,19 +26,23 @@ module.exports = {
         type: Sequelize.STRING
       },
       roleID: {
-        allowNull: false,
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      address: {
+        allowNull: true,
         type: Sequelize.STRING
       },
       phoneNumber: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       gender: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       birthDay: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       },
       createdAt: {
