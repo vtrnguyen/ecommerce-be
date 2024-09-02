@@ -36,7 +36,7 @@ let hashPassword = (password) => {
     });
 }
 
-let generateToken = (userInfor) => {
+let generateToken = (userInfor, expriredTime) => {
     let token = jwt.sign(
         {
             id: userInfor.id,
@@ -45,11 +45,38 @@ let generateToken = (userInfor) => {
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: "30s",
+            expiresIn: `${expriredTime}`,
         }
     )
 
     return token;
+}
+
+let refreshToken = (refreshToken) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            jwt.verify(refreshToken, process.env.JWT_SECRET, (error, userInfor) => {
+                if (error) {
+                    reject({
+                        errCode: 1,
+                        errMessage: "Refresh Token is not valid!!!",
+                    });
+                } else {
+                    let token = {};
+                    token.newAccessToken = generateToken(userInfor, "1h");
+                    token.newRefreshToken = generateToken(userInfor, "24h");
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: "OK",
+                        token,
+                    });
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
 let handleUserRegist = (userInfor) => {
@@ -71,6 +98,7 @@ let handleUserRegist = (userInfor) => {
                     email: userInfor.email,
                     password: newPassword,
                     roleID: userInfor.roleID,
+                    address: userInfor.address,
                     phoneNumber: userInfor.phoneNumber,
                     gender: userInfor.gender,
                 });
@@ -109,12 +137,14 @@ let handleUserLogin = (userInfor) => {
                         returnedUserInfor.roleID = user.roleID;
 
                         // generate token
-                        let accessToken = generateToken(user);
+                        let accessToken = generateToken(user, "1h");
+                        let refreshToken = generateToken(user, "24h")
 
                         resolve({
                             errCode: 0,
                             errMessage: "OK",
                             accessToken,
+                            refreshToken,
                             user: returnedUserInfor,
                         });
                     } else {
@@ -152,6 +182,8 @@ let handleGetUserInfor = (userID) => {
                     errMessage: "User can not found!!!",
                 });
             } else {
+                delete userInfor["password"];
+
                 resolve({
                     errCode: 0,
                     errMessage: "OK",
@@ -169,7 +201,13 @@ let getAllUser = () => {
         try {
             let users = await db.User.findAll();
 
-            if (users) {
+            if (users && users.length > 0) {
+                users = users.map((item) => {
+                    let user = item;
+                    delete user["password"];
+                    return user;
+                });
+
                 resolve({
                     errCode: 0,
                     errMessage: 'OK',
@@ -216,8 +254,81 @@ let deleteUser = (userID) => {
     })
 }
 
+let createUser = (newUserInfor) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let isEmailExist = await checkUserEmail(newUserInfor.email)
+
+            if (isEmailExist) {
+                resolve({
+                    errCode: -1,
+                    errMessage: "The email already exists in the system!!!",
+                });
+            } else {
+                let newPassword = await hashPassword(newUserInfor.password);
+
+                await db.User.create({
+                    firstName: newUserInfor.firstName,
+                    lastName: newUserInfor.lastName,
+                    email: newUserInfor.email,
+                    password: newPassword,
+                    roleID: newUserInfor.roleID,
+                    address: newUserInfor.address,
+                    phoneNumber: newUserInfor.phoneNumber,
+                    gender: newUserInfor.gender,
+                });
+
+                resolve({
+                    errCode: 0,
+                    errMessage: "OK",
+                });
+            }
+
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+let updateUser = (updateUserInfor) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: {
+                    id: updateUserInfor.id,
+                },
+                raw: false,
+            });
+
+            if (user) {
+                user.firstName = updateUserInfor.firstName;
+                user.lastName = updateUserInfor.lastName;
+                user.roleID = updateUserInfor.roleID;
+                user.address = updateUserInfor.address;
+                user.phoneNumber = updateUserInfor.phoneNumber;
+                user.gender = updateUserInfor.gender;
+
+                await user.save();
+                
+                resolve({
+                    errCode: 0,
+                    errMessage: "OK",
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: "User can not found!!!",
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 module.exports = {
     handleUserLogin, handleUserRegist,
+    refreshToken,
     getAllUser, handleGetUserInfor,
-    deleteUser
+    createUser, deleteUser, updateUser,
 }

@@ -6,8 +6,10 @@ let router = express.Router();
 
 // middlewareController.verifyToken ,
 
-router.get("/get-user-infor", userController.handleGetUserInfor);
-router.get("/get-all-users", userController.handleGetAllUser);
-router.delete("/delete-user", middlewareController.verifyDeleteUser, userController.handleDeleteUser);
+router.get("/get-user-infor", middlewareController.verifyToken, userController.handleGetUserInfor); // all
+router.get("/get-all-users", middlewareController.verifyToken, userController.handleGetAllUser); // admin
+router.post("/create-new-user", userController.handleCreateUser); // admin
+router.put("/update-user", userController.handleUpdateUser); // admin
+router.delete("/delete-user", userController.handleDeleteUser); // admin
 
 module.exports = router;

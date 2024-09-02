@@ -1,33 +1,38 @@
 import jwt from "jsonwebtoken";
 
-let verifyToken = (req, res, next) => {
-    let token = req.headers.token;
+let verifyToken = async (req, res, next) => {
+    try {
+        let token = req.headers.authorization;
 
-    if (token) {
-        jwt.verify(token, process.env.JWT_SECRET, (error, userInfor /*user infor is decoded by jwt verify*/) => {
-            if (error) {
-                return res.status(400).json("Token is not valid!!!");
-            } else {
-                req.user = userInfor;
-                next();
-            }
-        });
-    } else {
-        return res.status(400).json("You're not authenticated!!!");
-    }
-}
+        if (token) {
+            token = token.split(' ')[1];
 
-let verifyDeleteUser = (req, res, next) => {
-    verifyToken(req, res, () => {
-        if (req.user.id === Number(req.query.id) || req.user.roleID === "R0") {
+            const userInfor = await new Promise((resolve, reject) => {
+                jwt.verify(token, process.env.JWT_SECRET, (error, decodedInfor) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                    
+                    resolve(decodedInfor);
+                });
+            });
+
+            req.user = userInfor;
             next();
         } else {
-            return res.status(400).json("You are not allowed to delete other!!!");
+            return res.status(401).json({
+                errCode: -3,
+                errMessage: "You're not authenticated!!!",
+            });
         }
-    });
+    } catch (error) {
+        return res.status(401).json({
+            errCode: -2,
+            errMessage: "Token is not valid",
+        });
+    }
 }
 
 module.exports = {
     verifyToken,
-    verifyDeleteUser
 }
