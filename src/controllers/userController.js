@@ -84,7 +84,7 @@ let handleCreateUser = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            errCode: 2,
+            errCode: -1,
             errMessage: "Error from the server!!!",
         });
     }

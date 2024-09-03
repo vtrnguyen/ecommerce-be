@@ -14,7 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Category_Item.init({
-    value: DataTypes.STRING
+    value: DataTypes.STRING,
+    categoryID: DataTypes.INTEGER,
+    image: DataTypes.BLOB
   }, {
     sequelize,
     modelName: 'Category_Item',

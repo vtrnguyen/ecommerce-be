@@ -240,7 +240,7 @@ let deleteUser = (userID) => {
 
                 resolve({
                     errCode: 0,
-                    errMessage: "Delete user successfully...",
+                    errMessage: "OK",
                 });
             } else {
                 resolve({
