@@ -70,8 +70,41 @@ let deleteCategory = (categoryID) => {
     })
 }
 
+let updateCategory = (updateCategoryInfor) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let category = await db.Category.findOne({
+                where: {
+                    id: updateCategoryInfor.id,
+                },
+                raw: false,
+            });
+
+            if (category) {
+                category.categoryName = updateCategoryInfor.categoryName;
+                category.image = updateCategoryInfor.categoryImage;
+
+                await category.save();
+
+                resolve({
+                    errCode: 0,
+                    errMessage: "OK",
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    erMessage: "Category not found!!!",
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 module.exports = {
     createCategory, 
     getAllCategory,
     deleteCategory,
+    updateCategory,
 }
