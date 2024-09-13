@@ -103,9 +103,39 @@ let handleUpdateCategory = async (req, res) => {
     }
 }
 
+let handleGetCategoryInfor = async (req, res) => {
+    try {
+        if (!req.query.id) {
+            return res.status(200).json({
+                errCode: 2,
+                errMessage: "Missing input's parameter!!!",
+            });
+        } else {
+            let getCategoryInfor = await categoryService.getCategoryInfor(req.query.id);
+
+            if (getCategoryInfor.errCode === 0) {
+                return res.status(200).json({
+                    getCategoryInfor,
+                });
+            } else {
+                return res.status(200).json({
+                    getCategoryInfor,
+                });
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            errCode: -1,
+            errMessage: "Error from server!!!",
+        });
+    }
+}
+
 module.exports = {
     handleCreateNewCategory,
     handleGetAllCategory,
     handleDeleteCategory,
     handleUpdateCategory,
+    handleGetCategoryInfor,
 }

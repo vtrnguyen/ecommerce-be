@@ -102,9 +102,38 @@ let updateCategory = (updateCategoryInfor) => {
     });
 }
 
+let getCategoryInfor = (categoryID) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let categoryInfor = await db.Category.findOne({
+                where: {
+                    id: categoryID,
+                },
+            });
+
+            if (categoryInfor) {
+                categoryInfor.image = new Buffer(categoryInfor.image, 'base64').toString('binary');
+                resolve({
+                    errCode: 0,
+                    errMessage: "OK",
+                    categoryInfor,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Category is not found!!!",
+                });
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 module.exports = {
     createCategory, 
     getAllCategory,
     deleteCategory,
     updateCategory,
+    getCategoryInfor,
 }
